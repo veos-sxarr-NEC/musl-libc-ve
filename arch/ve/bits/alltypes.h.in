@@ -1,0 +1,33 @@
+#define _Addr long
+#define _Int64 long
+#define _Reg long
+//TYPEDEF char* __builtin_va_list;
+TYPEDEF __builtin_va_list va_list;
+
+TYPEDEF __builtin_va_list __isoc_va_list;
+
+#ifndef __cplusplus
+TYPEDEF int wchar_t;
+#endif
+TYPEDEF unsigned wint_t;
+
+#if defined(__FLT_EVAL_METHOD__) && __FLT_EVAL_METHOD__ == 2
+TYPEDEF long double float_t;
+TYPEDEF long double double_t;
+#else
+TYPEDEF float float_t;
+TYPEDEF double double_t;
+#endif
+
+TYPEDEF long time_t;
+TYPEDEF long suseconds_t;
+
+TYPEDEF struct { union { int __i[14]; volatile int __vi[14]; unsigned long __s[7]; } __u; } pthread_attr_t;
+TYPEDEF struct { union { int __i[10]; volatile int __vi[10]; volatile void *volatile __p[5]; } __u; } pthread_mutex_t;
+TYPEDEF struct { union { int __i[10]; volatile int __vi[10]; volatile void *volatile __p[5]; } __u; } mtx_t;
+TYPEDEF struct { union { int __i[12]; volatile int __vi[12]; void *__p[6]; } __u; } pthread_cond_t;
+TYPEDEF struct { union { int __i[12]; volatile int __vi[12]; void *__p[6]; } __u; } cnd_t;
+TYPEDEF struct { union { int __i[14]; volatile int __vi[14]; void *__p[7]; } __u; } pthread_rwlock_t;
+TYPEDEF struct { union { int __i[8]; volatile int __vi[8]; void *__p[4]; } __u; } pthread_barrier_t;
+/*task-refs #771*/
+TYPEDEF struct _IO_FILE { unsigned flags; unsigned char *rpos, *rend; int (*close)(struct _IO_FILE *); unsigned char *wend, *wpos; unsigned char *mustbezero_1; unsigned char *wbase; unsigned long (*read)(struct _IO_FILE *, unsigned char *, unsigned long); unsigned long (*write)(struct _IO_FILE *, const unsigned char *, unsigned long); long (*seek)(struct _IO_FILE *, long, int); unsigned char *buf; unsigned long buf_size; struct _IO_FILE *prev, *next; int fd; int pipe_pid; long lockcount; short dummy3; signed char mode; signed char lbf; volatile int lock; volatile int waiters; void *cookie; long off; char *getln_buf; void *mustbezero_2; unsigned char *shend; long shlim, shcnt; struct _IO_FILE *prev_locked, *next_locked; struct __locale_struct *locale; } FILE;
