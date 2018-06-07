@@ -248,7 +248,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 	} else {
 		guard = ROUND(DEFAULT_GUARD_SIZE + attr._a_guardsize);
 		size = guard + ROUND(DEFAULT_STACK_SIZE + attr._a_stacksize)
-			+ libc.tls_size +  __pthread_tsd_size;
+			+ ROUND(libc.tls_size +  __pthread_tsd_size);
 	}
 
 	if (!tsd) {
@@ -263,9 +263,16 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 			if (map == MAP_FAILED) goto fail;
 		}
 		full_mmap = map;
-		alloc_size = libc.tls_size + __pthread_tsd_size + PAGE_SIZE;
-		stack_start = (map + size) - (alloc_size);
 
+		if (!stack) {
+			/* If user does not provide his own stack address */
+			alloc_size = ROUND(libc.tls_size + __pthread_tsd_size) + PAGE_SIZE;
+		} else {
+			/* If user provides his own stack address */
+			alloc_size = ROUND(libc.tls_size + __pthread_tsd_size);
+		}
+
+		stack_start = (map + size) - (alloc_size);
 		map = __mmap(stack_start, alloc_size, PROT_READ|PROT_WRITE,
 					MAP_PRIVATE|MAP_ANON|MAP_FIXED|MAP_STACK, -1, 0);
 		if (map == MAP_FAILED) 
@@ -277,8 +284,7 @@ int __pthread_create(pthread_t *restrict res, const pthread_attr_t *restrict att
 			stack_limit = guard_ptr;
 		}
 	}
-
-	new = __copy_tls(stack);
+	new = __copy_tls(tsd - libc.tls_size);
 	new->map_base = full_mmap;
 	new->map_size = size;
 	new->stack = stack;

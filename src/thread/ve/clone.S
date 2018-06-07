@@ -96,6 +96,8 @@ __clone:
 	lea.sl  %s60, __libc@PC_HI(%s59,%s60)
 	ld      %s58, 0x38(0, %s60)     /* page_size is at 56 offset */
 	subu.l  %s58, %s47, %s58
+	lea	%s47, 0x180DC8		/* STACK_AREA_FOR_SIGNAL */
+	addu.l  %s58, %s47, %s58
 	or      %s8, %s58,(0)1		/* set initial stack_limit */
 
 	or	%s0, %s48, (0)1		/* %s0 = Args pointer */

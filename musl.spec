@@ -1,14 +1,13 @@
 %define _unpackaged_files_terminate_build 0
-
 Name:		musl-libc-ve
 Version:	1.1.14
-Release:	6.ve
+Release:	8%{?dist}
 Group:		System/Libraries
 Summary:	musl-libc library ported for VE
 #Group:
 License:	MIT
 #URL:
-Source0:	musl-libc-ve-1.1.14-6.ve.tar.gz
+Source0:	musl-libc-ve-1.1.14.tar.gz
 Vendor:		NEC Corporation
 BuildRequires:	vedebuginfo
 
