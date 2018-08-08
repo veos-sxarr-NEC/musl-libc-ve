@@ -1,7 +1,7 @@
 %define _unpackaged_files_terminate_build 0
 Name:		musl-libc-ve
 Version:	1.1.14
-Release:	8%{?dist}
+Release:	9%{?dist}
 Group:		System/Libraries
 Summary:	musl-libc library ported for VE
 #Group:

@@ -39,12 +39,6 @@ static struct {
 #ifdef __ve__
 #define SIZE_ALIGN 32
 #define MMAP_THRESHOLD (1LL<<30)/* 1GB is threshold value for malloc request*/
-#define MAX_BIN         63	/* Returning this value when requested bytes are greater than threshold*/
-#define START_INDEX_EXP 33      /* start index for 1088 - (MMAP_THRESHOLD-1) */
-#define EXPONENT_400    10      /* log(0x400) (base2) */
-#define EXPONENT_BIAS   1023    /* Bias final value to gain proper bin index*/
-#define SIGNIFICAND     52	/* Used for shift operation on calculation done on requested bytes*/
-#define INDEX_OFFSET    (START_INDEX_EXP-EXPONENT_400)  /* 23 */
 #else
 #define SIZE_ALIGN (4*sizeof(size_t))
 #define MMAP_THRESHOLD (0x1c00*SIZE_ALIGN)
@@ -129,24 +123,13 @@ static int bin_index(size_t x)
 		double v;
 		uint64_t  r;
 	} u;
-	int small_bin;
-	int idx;
 
-	small_bin = x /SIZE_ALIGN -1;
-	if (small_bin <= SIZE_ALIGN) {
-		/* x is less than or equal to 1087 */
-		return(small_bin);
-	}
-	if (x >= MMAP_THRESHOLD) {
-		/* x is greater than or equal to MMAP_THRESHOLD */
-		return(MAX_BIN);
-	}
+	x = x / SIZE_ALIGN - 1;
+	if (x <= 32) return x;
+	if (x > MMAP_THRESHOLD) return 63;
 
-	/* x is from 1088 to MMAP_THRESHOLD -1 */
 	u.v = x;
-	idx = (u.r >> SIGNIFICAND) - EXPONENT_BIAS + INDEX_OFFSET;
-
-	return(idx);
+	return (u.r >> 52) - 996;
 #else
 	x = x / SIZE_ALIGN - 1;
 	if (x <= 32) return x;
@@ -158,31 +141,16 @@ static int bin_index(size_t x)
 static int bin_index_up(size_t x)
 {
 #ifdef __ve__
-	union{
-		double v;
-		uint64_t  r;
-	} u;
-	int small_bin;
-	int idx;
+        union{
+                double v;
+                uint64_t  r;
+        } u;
 
-	small_bin = x /SIZE_ALIGN -1;
-	if (small_bin <= SIZE_ALIGN) {
-		/* x is less than or equal to 1087 */
-		return(small_bin);
-	}
-	if (x >= MMAP_THRESHOLD) {
-		/* x is greater than or equal to MMAP_THRESHOLD */
-		return(MAX_BIN);
-	}
+        x = x / SIZE_ALIGN - 1;
+        if (x <= 32) return x;
 
-	/* x is from 1088 to MMAP_THRESHOLD -1 */
-	u.v = x;
-	idx = (u.r >> SIGNIFICAND) - EXPONENT_BIAS + INDEX_OFFSET;
-
-	if ((u.r & ((1LL << SIGNIFICAND)-1)) != 0) {
-		idx += 1;
-	}
-	return(idx);
+        u.v = x;
+        return ((u.r + 0xFFFFFFFFFFFFF) >> 52) - 996;
 #else
 	x = x / SIZE_ALIGN - 1;
 	if (x <= 32) return x;
@@ -391,8 +359,10 @@ void *malloc(size_t n)
 
 	i = bin_index_up(n);
 	for (;;) {
+		lock(mal.free_lock);
 		uint64_t mask = mal.binmap & -(1ULL<<i);
 		if (!mask) {
+			unlock(mal.free_lock);
 			c = expand_heap(n);
 			if (!c) return 0;
 			if (alloc_rev(c)) {
@@ -409,9 +379,11 @@ void *malloc(size_t n)
 		if (c != BIN_TO_CHUNK(j)) {
 			if (!pretrim(c, n, i, j)) unbin(c, j);
 			unlock_bin(j);
+			unlock(mal.free_lock);
 			break;
 		}
 		unlock_bin(j);
+		unlock(mal.free_lock);
 	}
 
 	/* Now patch up in case we over-allocated */
@@ -527,16 +499,15 @@ void free(void *p)
 	/* Crash on corrupted footer (likely from buffer overflow) */
 	if (next->psize != self->csize) a_crash();
 
+	lock(mal.free_lock);
 	for (;;) {
 		if (self->psize & next->csize & C_INUSE) {
 			self->csize = final_size | C_INUSE;
 			next->psize = final_size | C_INUSE;
 			i = bin_index(final_size);
 			lock_bin(i);
-			lock(mal.free_lock);
 			if (self->psize & next->csize & C_INUSE)
 				break;
-			unlock(mal.free_lock);
 			unlock_bin(i);
 		}
 
@@ -562,7 +533,6 @@ void free(void *p)
 
 	self->csize = final_size;
 	next->psize = final_size;
-	unlock(mal.free_lock);
 
 	self->next = BIN_TO_CHUNK(i);
 	self->prev = mal.bins[i].tail;
@@ -584,4 +554,5 @@ void free(void *p)
 	}
 
 	unlock_bin(i);
+	unlock(mal.free_lock);
 }
