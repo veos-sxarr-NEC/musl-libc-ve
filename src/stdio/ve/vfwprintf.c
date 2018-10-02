@@ -364,18 +364,9 @@ static int wprintf_core(FILE *f, const wchar_t *fmt, va_list *ap, union arg *nl_
 			fputwc(btowc(arg.i), f);
 			continue;
 		case 'C':
-			specifier_string = calculate_char_specifier(&s[-2]);
-			x_sp = atoi(specifier_string);
-			l = x_sp;
-			fill_space_cnt = l - 1;
-			free(specifier_string);
-
-			/*code added to fill the space as per specifier*/
-			for(char_data_index = 0; char_data_index < fill_space_cnt; char_data_index++) {
-				fputwc(32, f);
-			}
 			fputwc(arg.i, f);
-			continue;
+                        l = 1;
+                        continue;
 		case 'S':
 			a = arg.p;
 			z = wmemchr(a, 0, p);

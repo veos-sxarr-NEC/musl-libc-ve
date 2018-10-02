@@ -651,3 +651,13 @@
 #define SYS_pwrite SYS_pwrite64
 #define SYS_getdents SYS_getdents64
 #define SYS_fadvise SYS_fadvise64
+
+#include <sys/types.h>
+#include <inttypes.h>
+
+/*Function gets clock frequency*/
+extern ssize_t _ve_get_ve_info(char *name, char *buffer, size_t size);
+
+/*Added STM Macro*/
+#define GET_STM(ret_stm, vehva) \
+asm volatile("lhm.l %0,0(%1)":"=r"(ret_stm):"r"(vehva)); \
