@@ -8,6 +8,8 @@
 # Do not make changes here.
 #
 
+SHELL = /bin/bash
+
 srcdir = .
 exec_prefix = /usr/local
 ve_config = ld-musl-ve.path
@@ -244,7 +246,7 @@ $(DESTDIR)$(LDSO_PATHNAME): $(DESTDIR)$(libdir)/libc.so
 	$(INSTALL) -D -l $(libdir)/libc.so $@ || true
 
 install-configs:
-	mkdir -p /etc$(prefix)
+	mkdir -p $(DESTDIR)/etc$(prefix)
 	echo $(syslibdir) > $(DESTDIR)/etc$(prefix)/$(ve_config)
 	echo -e "veroot\t\t: $(prefix)" > $(DESTDIR)/etc$(prefix)/$(ncc_config)
 	echo -e "as\t\t: $(bindir)/nas" >> $(DESTDIR)/etc$(prefix)/$(ncc_config)

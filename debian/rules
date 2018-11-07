@@ -1,0 +1,31 @@
+#!/usr/bin/make -f
+SHELL=/bin/bash
+export DH_VERBOSE = 1
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export DEB_VENDOR = "NEC Corporation"
+export PREFIX = /opt/nec/ve/musl
+export EXEC_PREFIX = /opt/nec/ve
+export DH_AUTO_OPTIONS = ARCH=ve
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	        ./configure --target=ve \
+				--exec-prefix=${EXEC_PREFIX} \
+				--prefix=${PREFIX} \
+				--sysconfdir=/etc/${PREFIX} \
+				--syslibdir=${PREFIX}/lib \
+				--disable-optimize \
+				CFLAGS="-g -O0 -mno-vector -mno-vector-memcpy -fcfi-sections=debug_frame" \
+	                        LDFLAGS="-Wl,--build-id -Wl,-z,max-page-size=0x200000"
+		chmod a+x debian/rules
+override_dh_install:
+	dh_install
+override_dh_fixperms:
+override_dh_installdeb:
+override_dh_strip:
+	PATH=/opt/nec/ve/ve-nec-linux/bin:${PATH} dh_strip
+	install -d debian/.debhelper/musl-libc-ve/dbgsym-root/opt/nec/ve/
+	mv debian/.debhelper/musl-libc-ve/dbgsym-root/usr/lib \
+		debian/.debhelper/musl-libc-ve/dbgsym-root/opt/nec/ve/

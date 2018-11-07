@@ -1,0 +1,4 @@
+opt/nec/ve/musl/lib/*.so*
+opt/nec/ve/bin/musl-ncc
+etc/opt/nec/ve/musl/ld-musl-ve.path
+etc/opt/nec/ve/musl/musl-ncc.cf

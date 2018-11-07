@@ -1,0 +1,3 @@
+opt/nec/ve/musl/include/*
+opt/nec/ve/musl/lib/*.a
+opt/nec/ve/musl/lib/*.o
