@@ -1,7 +1,7 @@
 %define _unpackaged_files_terminate_build 0
 Name:		musl-libc-ve
 Version:	1.1.14
-Release:	11%{?dist}
+Release:	12%{?dist}
 Group:		System/Libraries
 Summary:	musl-libc library ported for VE
 #Group:
@@ -45,9 +45,7 @@ make DESTDIR=%{buildroot} install ARCH=ve
 
 %files
 %{_libdir}/*.so*
-%{_exec_prefix}/bin/musl-ncc
 %config(noreplace) /etc/%{_prefix}/ld-musl-ve.path
-%config(noreplace) /etc/%{_prefix}/musl-ncc.cf
 
 %files devel
 %{_includedir}/*
